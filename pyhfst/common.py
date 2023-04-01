@@ -53,14 +53,14 @@ class LetterTrie:
             child = self.children.get(at_s)
             if child is None:
                 symbol = self.symbols.get(at_s)
-                if symbol == 0:
+                if symbol is None:
                     index_string.index -= 1
                     return NO_SYMBOL_NUMBER
                 return symbol
             s = child.find_key(index_string)
             if s == NO_SYMBOL_NUMBER:
                 symbol = self.symbols.get(at_s)
-                if symbol == 0:
+                if symbol is None:
                     index_string.index -= 1
                     return NO_SYMBOL_NUMBER
                 return symbol
