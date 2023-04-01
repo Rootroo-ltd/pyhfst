@@ -24,7 +24,7 @@ The library will run on all operting systems that support Python 3.
 
 Please cite the library as follows:
 
-Hämäläinen, Mika, & Alnajjar, Khalid. (2023). Pyhfst: A Pure Python Implementation of HFST (1.0.0). Zenodo. https://doi.org/10.5281/zenodo.7791470
+Hämäläinen, Mika, & Alnajjar, Khalid. (2023). Pyhfst: A Pure Python Implementation of HFST. Zenodo. https://doi.org/10.5281/zenodo.7791470
 
     @article{pyhfst_2023, 
         title={Pyhfst: A Pure Python Implementation of HFST}, 
