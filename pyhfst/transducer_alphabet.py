@@ -1,19 +1,28 @@
 import io
-from typing import List
-from .flag_diacritic_operation  import FlagDiacriticOperator
+from typing import List, Dict
+from .flag_diacritic_operation import FlagDiacriticOperator
+
 
 class FlagDiacriticOperation:
+
     def __init__(self, operation, feat, val):
         self.op = operation
         self.feature = feat
         self.value = val
 
+
 class TransducerAlphabet:
     def __init__(self, charstream: io.BytesIO, number_of_symbols: int) -> None:
+        """
+        Initializes the TransducerAlphabet instance.
+
+        :param charstream: A byte stream containing the alphabet data.
+        :param number_of_symbols: The number of symbols in the alphabet.
+        """
         self.keyTable: List[str] = []
-        self.operations = {}
-        feature_bucket = {}
-        value_bucket = {}
+        self.operations: Dict[int, FlagDiacriticOperation] = {}
+        feature_bucket: Dict[str, int] = {}
+        value_bucket: Dict[str, int] = {}
         self.features = 0
         values = 1
         value_bucket[""] = 0  # neutral value
