@@ -6,6 +6,10 @@ Pyhfst is a pure Python implementation of HFST. The library makes it possible to
 
 The library will run on all operting systems that support Python 3.
 
+# Installation
+
+    pip install pyhfst
+
 # Usage
 
     import pyhfst
