@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Union, Optional
+from typing import List, Dict, Any, Tuple, Union, Optional
 import io
 from collections import defaultdict
 from .byte_array import ByteArray
@@ -107,11 +107,9 @@ class IndexTable:
         input_stream.readinto(b.bytes)
         self.ti_input_symbols: List[int] = [0] * indices_count
         self.ti_targets: List[int] = [0] * indices_count
-        i = 0
-        while i < indices_count:
+        for i in range(indices_count):
             self.ti_input_symbols[i] = b.get_ushort()
             self.ti_targets[i] = b.get_uint()
-            i += 1
 
     def get_input(self, i: int) -> int:
         """
@@ -163,14 +161,13 @@ class TransitionTable:
         self.ti_output_symbols: List[int] = [0] * transition_count
         self.ti_targets: List[int] = [0] * transition_count
         self.ti_weights: List[float] = [0.0] * transition_count
-        i = 0
-        while i < transition_count:
+
+        for i in range(transition_count):
             self.ti_input_symbols[i] = b.get_ushort()
             self.ti_output_symbols[i] = b.get_ushort()
             self.ti_targets[i] = b.get_uint()
             if self.is_weighted:
                 self.ti_weights[i] = b.get_float()
-            i += 1
 
     def get_input(self, pos: int) -> int:
         """

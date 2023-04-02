@@ -59,39 +59,16 @@ class Transducer:
         :param state: The current state of the transducer.
         """
         while True:
-            if self.operations.get(self.transition_table.get_input(index)):
-                if not self.push_state(self.operations[self.transition_table.get_input(index)], state):
-                    index += 1
-                    continue
-                else:
-                    state.output_string[state.output_pointer] = self.transition_table.get_output(
-                        index)
-                    state.output_pointer += 1
-                    if self.is_weighted:
-                        state.current_weight += self.transition_table.get_weight(
-                            index)
-                    self.get_analyses(
-                        self.transition_table.get_target(index), state)
-                    if self.is_weighted:
-                        state.current_weight -= self.transition_table.get_weight(
-                            index)
-                    state.output_pointer -= 1
-                    index += 1
-                    state.state_stack.pop()
-                    continue
-            elif self.transition_table.get_input(index) == 0:
-                state.output_string[state.output_pointer] = self.transition_table.get_output(
-                    index)
-                state.output_pointer += 1
-                if self.is_weighted:
-                    state.current_weight += self.transition_table.get_weight(
-                        index)
-                self.get_analyses(
-                    self.transition_table.get_target(index), state)
-                if self.is_weighted:
-                    state.current_weight -= self.transition_table.get_weight(
-                        index)
-                state.output_pointer -= 1
+            input_symbol = self.transition_table.get_input(index)
+
+            if self.operations.get(input_symbol):
+                if self.push_state(self.operations[input_symbol], state):
+                    self.handle_epsilon_transition(index, state)
+                index += 1
+                state.state_stack.pop()
+                continue
+            elif input_symbol == 0:
+                self.handle_epsilon_transition(index, state)
                 index += 1
                 continue
             else:
@@ -108,6 +85,27 @@ class Transducer:
             self.find_transitions(self.pivot(self.index_table.get_target(
                 index + state.input_string[state.input_pointer - 1])), state)
 
+    def handle_epsilon_transition(self, index: int, state: State) -> None:
+        """
+        Handles epsilon transitions for the given index and state.
+
+        :param index: The index to handle epsilon transitions for.
+        :param state: The current state of the transducer.
+        """
+        self.update_output_string(
+            state, self.transition_table.get_output(index))
+        state.output_pointer += 1
+
+        if self.is_weighted:
+            state.current_weight += self.transition_table.get_weight(index)
+
+        self.get_analyses(self.transition_table.get_target(index), state)
+
+        if self.is_weighted:
+            state.current_weight -= self.transition_table.get_weight(index)
+
+        state.output_pointer -= 1
+
     def find_transitions(self, index: int, state: State) -> None:
         """
         Finds the transitions in the transducer for the given index and state.
@@ -115,27 +113,27 @@ class Transducer:
         :param index: The index to find transitions for.
         :param state: The current state of the transducer.
         """
-        while self.transition_table.get_input(index) != NO_SYMBOL_NUMBER:
-            if self.transition_table.get_input(index) == state.input_string[state.input_pointer - 1]:
-                if state.output_pointer == len(state.output_string):
-                    state.output_string.append(
-                        self.transition_table.get_output(index))
-                else:
-                    state.output_string[state.output_pointer] = self.transition_table.get_output(
-                        index)
+        for idx in range(index, self.transition_table.size()):
+            input_symbol = self.transition_table.get_input(idx)
+            if input_symbol == NO_SYMBOL_NUMBER:
+                break
+
+            if input_symbol == state.input_string[state.input_pointer - 1]:
+                self.update_output_string(
+                    state, self.transition_table.get_output(idx))
                 state.output_pointer += 1
+
                 if self.is_weighted:
                     state.current_weight += self.transition_table.get_weight(
-                        index)
-                self.get_analyses(
-                    self.transition_table.get_target(index), state)
+                        idx)
+
+                self.get_analyses(self.transition_table.get_target(idx), state)
+
                 if self.is_weighted:
                     state.current_weight -= self.transition_table.get_weight(
-                        index)
+                        idx)
+
                 state.output_pointer -= 1
-            else:
-                return
-            index += 1
 
     def get_analyses(self, idx: int, state: State) -> None:
         """
@@ -144,51 +142,97 @@ class Transducer:
         :param idx: The index to get the analyses for.
         :param state: The current state of the transducer.
         """
-        if idx >= TRANSITION_TARGET_TABLE_START:
-            index = self.pivot(idx)
+        index = self.pivot(idx)
+        is_transition = idx >= TRANSITION_TARGET_TABLE_START
+
+        if is_transition:
             self.try_epsilon_transitions(index + 1, state)
-            # end of input string
-            if state.input_string[state.input_pointer] == NO_SYMBOL_NUMBER:
-                if state.output_pointer == len(state.output_string):
-                    state.output_string.append(NO_SYMBOL_NUMBER)
-                else:
-                    state.output_string[state.output_pointer] = NO_SYMBOL_NUMBER
-                if self.transition_table.size() > index and self.transition_table.is_final(index):
-                    if self.is_weighted:
-                        state.current_weight += self.transition_table.get_weight(
-                            index)
-                    self.note_analysis(state)
-                    if self.is_weighted:
-                        state.current_weight -= self.transition_table.get_weight(
-                            index)
-                return
-            state.input_pointer += 1
+        else:
+            self.try_epsilon_indices(index + 1, state)
+
+        if state.input_string[state.input_pointer] == NO_SYMBOL_NUMBER:
+            self.handle_end_of_input_string(state, index, is_transition)
+            return
+
+        state.input_pointer += 1
+
+        if is_transition:
             self.find_transitions(index + 1, state)
         else:
-            index = self.pivot(idx)
-            self.try_epsilon_indices(index + 1, state)
-            # end of input string
-            if state.input_string[state.input_pointer] == NO_SYMBOL_NUMBER:
-                if state.output_pointer == len(state.output_string):
-                    state.output_string.append(NO_SYMBOL_NUMBER)
-                else:
-                    state.output_string[state.output_pointer] = NO_SYMBOL_NUMBER
-                if self.index_table.is_final(index):
-                    if self.is_weighted:
-                        state.current_weight += self.index_table.get_final_weight(
-                            index)
-                    self.note_analysis(state)
-                    if self.is_weighted:
-                        state.current_weight -= self.index_table.get_final_weight(
-                            index)
-                return
-            state.input_pointer += 1
             self.find_index(index + 1, state)
+
         state.input_pointer -= 1
+        self.reset_output_pointer(state)
+
+    def update_output_string(self, state: State, output_symbol: int) -> None:
+        """
+        Updates the output string in the state based on the output symbol.
+
+        :param state: The current state of the transducer.
+        :param output_symbol: The output symbol to append or update in the output string.
+        """
+        if state.output_pointer == len(state.output_string):
+            state.output_string.append(output_symbol)
+        else:
+            state.output_string[state.output_pointer] = output_symbol
+
+    def handle_end_of_input_string(self, state: State, index: int, is_transition: bool) -> None:
+        """
+        Handles the end of the input string.
+
+        :param state: The current state of the transducer.
+        :param index: The index being processed.
+        :param is_transition: A boolean indicating whether it's a transition table or an index table.
+        """
+        self.reset_output_pointer(state)
+
+        is_final, weight = self.get_final_and_weight(index, is_transition)
+        if is_final:
+            self.update_and_note_analysis(state, weight)
+
+    def reset_output_pointer(self, state: State) -> None:
+        """
+        Resets the output pointer in the state.
+
+        :param state: The current state of the transducer.
+        """
         if state.output_pointer == len(state.output_string):
             state.output_string.append(NO_SYMBOL_NUMBER)
         else:
             state.output_string[state.output_pointer] = NO_SYMBOL_NUMBER
+
+    def get_final_and_weight(self, index: int, is_transition: bool) -> Tuple[bool, float]:
+        """
+        Gets the final state and weight based on the index and transition flag.
+
+        :param index: The index being processed.
+        :param is_transition: A boolean indicating whether it's a transition table or an index table.
+        :return: A tuple containing a boolean for final state and a float for the weight.
+        """
+        if is_transition:
+            is_final = self.transition_table.size(
+            ) > index and self.transition_table.is_final(index)
+            weight = self.transition_table.get_weight(
+                index) if self.is_weighted else 0
+        else:
+            is_final = self.index_table.is_final(index)
+            weight = self.index_table.get_final_weight(
+                index) if self.is_weighted else 0
+
+        return is_final, weight
+
+    def update_and_note_analysis(self, state: State, weight: float) -> None:
+        """
+        Updates the state's current weight and notes the analysis.
+
+        :param state: The current state of the transducer.
+        :param weight: The weight to be
+        """
+        if self.is_weighted:
+            state.current_weight += weight
+        self.note_analysis(state)
+        if self.is_weighted:
+            state.current_weight -= weight
 
     def get_symbols(self, state: State) -> List[str]:
         """
@@ -197,11 +241,8 @@ class Transducer:
         :param state: The current state of the transducer.
         :return: A list of symbols.
         """
-        i = 0
-        symbols = []
-        while i < len(state.output_string) and state.output_string[i] != NO_SYMBOL_NUMBER:
-            symbols.append(self.alphabet.keyTable[state.output_string[i]])
-            i += 1
+        symbols = [self.alphabet.keyTable[state.output_string[i]] for i in range(
+            len(state.output_string)) if state.output_string[i] != NO_SYMBOL_NUMBER]
         return symbols
 
     def note_analysis(self, state: State) -> None:
@@ -231,8 +272,9 @@ class Transducer:
         state = State(input, self)
         if state.input_string[0] == NO_SYMBOL_NUMBER:
             return []
-        self.get_analyses(0, state)
-        return state.display_vector
+        else:
+            self.get_analyses(0, state)
+            return state.display_vector
 
     def push_state(self, flag: FlagDiacriticOperation, state: State) -> bool:
         """
@@ -242,7 +284,7 @@ class Transducer:
         :param state: The current state of the transducer.
         :return: A boolean indicating if the push was successful.
         """
-        top = state.state_stack[-1].copy()
+        top = state.state_stack[-1]
         if flag.op == FlagDiacriticOperator.P:  # positive set
             state.state_stack.append(top)
             state.state_stack[-1][flag.feature] = flag.value
