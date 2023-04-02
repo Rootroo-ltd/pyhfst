@@ -46,9 +46,9 @@ class LetterTrie:
             :param index_string: The index string to search for.
             :return: The symbol number if found, otherwise NO_SYMBOL_NUMBER.
             """
-            if index_string.index >= len(index_string.str):
+            if index_string.index >= len(index_string):
                 return NO_SYMBOL_NUMBER
-            at_s = index_string.str[index_string.index]
+            at_s = index_string[index_string.index]
             index_string.index += 1
             child = self.children.get(at_s)
             if child is None:
@@ -87,14 +87,16 @@ class LetterTrie:
         return self.root.find_key(index_string)
 
 
-class IndexString:
+class IndexString(str):
     """
     A simple class to represent a string and its index position.
     """
+    index = 0
 
-    def __init__(self, s: str):
-        self.str: str = s
-        self.index: int = 0
+    def __new__(cls, s: str):
+        obj = str.__new__(cls, s)
+        obj.index = 0
+        return obj
 
 
 class IndexTable:
