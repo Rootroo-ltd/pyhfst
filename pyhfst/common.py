@@ -11,63 +11,65 @@ NO_SYMBOL_NUMBER = 65535  # USHRT_MAX
 NO_TABLE_INDEX = 4294967295
 
 
+class LetterTrieNode:
+    """
+    A node in the LetterTrie.
+    """
+
+    def __init__(self):
+        self.symbols: Dict[str, int] = defaultdict()
+        self.children: Dict[str,
+                            'LetterTrieNode'] = defaultdict()
+
+    def add_string(self, string: str, symbol_number: int) -> None:
+        """
+        Adds a string and its associated symbol number to the trie.
+
+        :param string: The string to add.
+        :param symbol_number: The associated symbol number.
+        """
+        if len(string) > 1:
+            if string[0] not in self.children:
+                self.children[string[0]] = LetterTrieNode()
+            self.children[string[0]].add_string(string[1:], symbol_number)
+        elif len(string) == 1:
+            self.symbols[string[0]] = symbol_number
+
+    def find_key(self, index_string: 'IndexString') -> int:
+        """
+        Finds the key associated with the given index string.
+
+        :param index_string: The index string to search for.
+        :return: The symbol number if found, otherwise NO_SYMBOL_NUMBER.
+        """
+        if index_string.index >= len(index_string):
+            return NO_SYMBOL_NUMBER
+        at_s = index_string[index_string.index]
+        index_string.index += 1
+        child = self.children.get(at_s)
+        if child is None:
+            symbol = self.symbols.get(at_s)
+            if symbol is None:
+                index_string.index -= 1
+                return NO_SYMBOL_NUMBER
+            return symbol
+        s = child.find_key(index_string)
+        if s == NO_SYMBOL_NUMBER:
+            symbol = self.symbols.get(at_s)
+            if symbol is None:
+                index_string.index -= 1
+                return NO_SYMBOL_NUMBER
+            return symbol
+        return s
+
+
 class LetterTrie:
     """
     A trie (prefix tree) that associates strings with symbol numbers.
     """
-    class LetterTrieNode:
-        """
-        A node in the LetterTrie.
-        """
-
-        def __init__(self):
-            self.symbols: Dict[str, int] = defaultdict()
-            self.children: Dict[str,
-                                'LetterTrie.LetterTrieNode'] = defaultdict()
-
-        def add_string(self, string: str, symbol_number: int) -> None:
-            """
-            Adds a string and its associated symbol number to the trie.
-
-            :param string: The string to add.
-            :param symbol_number: The associated symbol number.
-            """
-            if len(string) > 1:
-                if string[0] not in self.children:
-                    self.children[string[0]] = LetterTrie.LetterTrieNode()
-                self.children[string[0]].add_string(string[1:], symbol_number)
-            elif len(string) == 1:
-                self.symbols[string[0]] = symbol_number
-
-        def find_key(self, index_string: 'IndexString') -> int:
-            """
-            Finds the key associated with the given index string.
-
-            :param index_string: The index string to search for.
-            :return: The symbol number if found, otherwise NO_SYMBOL_NUMBER.
-            """
-            if index_string.index >= len(index_string):
-                return NO_SYMBOL_NUMBER
-            at_s = index_string[index_string.index]
-            index_string.index += 1
-            child = self.children.get(at_s)
-            if child is None:
-                symbol = self.symbols.get(at_s)
-                if symbol is None:
-                    index_string.index -= 1
-                    return NO_SYMBOL_NUMBER
-                return symbol
-            s = child.find_key(index_string)
-            if s == NO_SYMBOL_NUMBER:
-                symbol = self.symbols.get(at_s)
-                if symbol is None:
-                    index_string.index -= 1
-                    return NO_SYMBOL_NUMBER
-                return symbol
-            return s
 
     def __init__(self):
-        self.root = LetterTrie.LetterTrieNode()
+        self.root = LetterTrieNode()
 
     def add_string(self, string: str, symbol_number: int) -> None:
         """
