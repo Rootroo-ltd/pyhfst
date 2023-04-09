@@ -103,8 +103,8 @@ setup_args = {
 
 try:
     from Cython.Build import cythonize
-
-    reqs = ['cython']
-    setup(ext_modules=cythonize("c_pyhfst/*.pyx", language_level=3), **setup_args)
+    custom_setup_args = setup_args
+    custom_setup_args['install_requires'] = ['cython']
+    setup(ext_modules=cythonize("c_pyhfst/*.pyx", language_level=3), **custom_setup_args)
 except Exception as e:
     setup(**setup_args)
