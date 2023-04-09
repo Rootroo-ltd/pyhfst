@@ -5,7 +5,7 @@ from .transducer import Transducer
 from .transducer_header import TransducerHeader
 from .transducer_alphabet import TransducerAlphabet
 from .transducer import Transducer
-
+from .analyzer import Analyzer
 
 def get_transducer(transducer_path: Union[str, Path]) -> Transducer:
     """
@@ -58,4 +58,4 @@ class Hfst(object):
         :param string: The input string to analyze.
         :return: A list of lists, where each sublist contains the string representation of the result and its weight.
         """
-        return [["".join(_r.get_symbols()), _r.get_weight()] for _r in self.tr.analyze(string)]
+        return [["".join(_r.get_symbols()), _r.get_weight()] for _r in Analyzer(self.tr, string).analyze()]
