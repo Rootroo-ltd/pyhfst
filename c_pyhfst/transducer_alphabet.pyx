@@ -1,5 +1,6 @@
 # cython: language_level=3
 from .flag_diacritic_operator cimport FlagDiacriticOperator
+from .flag_diacritic_operation cimport FlagDiacriticOperation
 import io
 
 cdef class TransducerAlphabet:

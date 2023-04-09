@@ -1,3 +1,4 @@
+# cython: language_level=3
 cpdef enum FlagDiacriticOperator:
     P = 0
     N = 1

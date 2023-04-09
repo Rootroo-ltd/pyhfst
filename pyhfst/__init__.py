@@ -1,11 +1,17 @@
 from typing import Union, List
 from pathlib import Path
 from io import BufferedReader
-from .transducer import Transducer
-from .transducer_header import TransducerHeader
-from .transducer_alphabet import TransducerAlphabet
-from .transducer import Transducer
-from .analyzer import Analyzer
+
+try:
+    from c_pyhfst.transducer import Transducer
+    from c_pyhfst.transducer_header import TransducerHeader
+    from c_pyhfst.transducer_alphabet import TransducerAlphabet
+    from c_pyhfst.analyzer import Analyzer
+except:
+    from .transducer import Transducer
+    from .transducer_header import TransducerHeader
+    from .transducer_alphabet import TransducerAlphabet
+    from .analyzer import Analyzer
 
 def get_transducer(transducer_path: Union[str, Path]) -> Transducer:
     """

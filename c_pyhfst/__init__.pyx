@@ -4,6 +4,7 @@ from io import BufferedReader
 from .transducer_header cimport TransducerHeader
 from .transducer_alphabet cimport TransducerAlphabet
 from .transducer cimport Transducer as Transducer
+from .analyzer import Analyzer
 
 cpdef Transducer get_transducer(transducer_path: Union[str, Path]):
     """

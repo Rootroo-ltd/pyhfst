@@ -1,5 +1,4 @@
-# flag_diacritic_operation.pxd
-
+# cython: language_level=3
 from .common cimport *
 from .flag_diacritic_operator cimport FlagDiacriticOperator
 

@@ -1,3 +1,4 @@
+# cython: language_level=3
 cdef class TransducerHeader:
     cdef int number_of_input_symbols
     cdef int number_of_symbols
