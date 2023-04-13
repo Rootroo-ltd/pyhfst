@@ -1,13 +1,14 @@
-from .common import *
-from .transducer_header import TransducerHeader
-from .transducer_alphabet import TransducerAlphabet
+# cython: language_level=3
+from .common cimport *
+from .transducer_header cimport TransducerHeader
+from .transducer_alphabet cimport TransducerAlphabet
 
-class Transducer:
+cdef class Transducer:
     """
     A class representing a finite state transducer for morphological analysis.
     """
 
-    def __init__(self, file, h: TransducerHeader, a: TransducerAlphabet, is_weighted: bool = True) -> None:
+    def __init__(self, file, TransducerHeader h, TransducerAlphabet a, bint is_weighted=True):
         """
         Initializes the Transducer instance.
 

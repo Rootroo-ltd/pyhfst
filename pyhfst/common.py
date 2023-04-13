@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Tuple, Union, Optional
 import io
+from collections.abc import ByteString
 from collections import defaultdict
 from .byte_array import ByteArray
 
@@ -9,96 +10,6 @@ TRANSITION_TARGET_TABLE_START = 2147483648  # 2^31 or UINT_MAX/2 rounded up
 INFINITE_WEIGHT = float(4294967295)
 NO_SYMBOL_NUMBER = 65535  # USHRT_MAX
 NO_TABLE_INDEX = 4294967295
-
-
-class LetterTrieNode:
-    """
-    A node in the LetterTrie.
-    """
-
-    def __init__(self):
-        self.symbols: Dict[str, int] = defaultdict()
-        self.children: Dict[str,
-                            'LetterTrieNode'] = defaultdict()
-
-    def add_string(self, string: str, symbol_number: int) -> None:
-        """
-        Adds a string and its associated symbol number to the trie.
-
-        :param string: The string to add.
-        :param symbol_number: The associated symbol number.
-        """
-        if len(string) > 1:
-            if string[0] not in self.children:
-                self.children[string[0]] = LetterTrieNode()
-            self.children[string[0]].add_string(string[1:], symbol_number)
-        elif len(string) == 1:
-            self.symbols[string[0]] = symbol_number
-
-    def find_key(self, index_string: 'IndexString') -> int:
-        """
-        Finds the key associated with the given index string.
-
-        :param index_string: The index string to search for.
-        :return: The symbol number if found, otherwise NO_SYMBOL_NUMBER.
-        """
-        if index_string.index >= len(index_string):
-            return NO_SYMBOL_NUMBER
-        at_s = index_string[index_string.index]
-        index_string.index += 1
-        child = self.children.get(at_s)
-        if child is None:
-            symbol = self.symbols.get(at_s)
-            if symbol is None:
-                index_string.index -= 1
-                return NO_SYMBOL_NUMBER
-            return symbol
-        s = child.find_key(index_string)
-        if s == NO_SYMBOL_NUMBER:
-            symbol = self.symbols.get(at_s)
-            if symbol is None:
-                index_string.index -= 1
-                return NO_SYMBOL_NUMBER
-            return symbol
-        return s
-
-
-class LetterTrie:
-    """
-    A trie (prefix tree) that associates strings with symbol numbers.
-    """
-
-    def __init__(self):
-        self.root = LetterTrieNode()
-
-    def add_string(self, string: str, symbol_number: int) -> None:
-        """
-        Adds a string and its associated symbol number to the trie.
-
-        :param string: The string to add.
-        :param symbol_number: The associated symbol number.
-        """
-        self.root.add_string(string, symbol_number)
-
-    def find_key(self, index_string: 'IndexString') -> int:
-        """
-        Finds the key associated with the given index string.
-        :param index_string: The index string to search for.
-        :return: The symbol number if found, otherwise NO_SYMBOL_NUMBER.
-        """
-        return self.root.find_key(index_string)
-
-
-class IndexString(str):
-    """
-    A simple class to represent a string and its index position.
-    """
-    index = 0
-
-    def __new__(cls, s: str):
-        obj = str.__new__(cls, s)
-        obj.index = 0
-        return obj
 
 
 class IndexTable:
@@ -240,19 +151,30 @@ class State:
         neutral: List[int] = [0] * parent.alphabet.features
         self.state_stack.append(neutral)
         self.output_string: List[int] = [NO_SYMBOL_NUMBER] * 1000
-        self.input_string: List[int] = []
+        self.input_string: List[int] = list(self.find_key(input))
         self.output_pointer: int = 0
         self.input_pointer: int = 0
         self.current_weight: float = 0.0
         self.display_vector: List[int] = []
 
-        input_line = IndexString(input)
-        while input_line.index < len(input):
-            self.input_string.append(parent.letter_trie.find_key(input_line))
-            if self.input_string[-1] == NO_SYMBOL_NUMBER:
-                self.input_string.clear()
-                break
-        self.input_string.append(NO_SYMBOL_NUMBER)
+    def find_key(self, index_string: str) -> List[int]:
+        """
+        Finds the key associated with the given index string.
+        :param index_string: The index string to search for.
+        :return: The symbol number if found, otherwise NO_SYMBOL_NUMBER.
+        """
+        
+        _pos = 0
+        while _pos < len(index_string):
+            for _length in range(1, len(index_string[_pos:]) + 1):
+                _x = index_string[_pos :_pos + _length]
+                try:
+                    yield self.parent.symbol_map[_x]
+                except:
+                    break
+            _pos += 1
+
+        yield NO_SYMBOL_NUMBER
 
 
 class Result:
