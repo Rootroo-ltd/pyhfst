@@ -9,6 +9,11 @@ The library will run on all operting systems that support Python 3.
 # Installation
 
     pip install pyhfst
+    
+Pyhfst can run way faster if you have Cython installed. After installing Cython, you must reinstall Pyhfst
+
+    pip install cython
+    pip install --upgrade --force-reinstall pyhfst
 
 # Usage
 
