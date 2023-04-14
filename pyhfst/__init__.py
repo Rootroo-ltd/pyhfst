@@ -2,6 +2,7 @@ from typing import Union, List, Tuple
 from pathlib import Path
 from io import BufferedReader
 
+
 try:
     from c_pyhfst.transducer import Transducer
     from c_pyhfst.transducer_header import TransducerHeader
