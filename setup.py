@@ -11,6 +11,7 @@ from setuptools import setup, find_packages, Extension
 from codecs import open
 from os import path
 import os
+from glob import glob
 
 here = path.abspath(path.dirname(__file__))
 
@@ -65,7 +66,7 @@ setup_args = {
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    'packages': find_packages(),
+    'packages': ["c_pyhfst", "pyhfst"],
     'package_dir': {'pyhfst': 'pyhfst', 'c_pyhfst': 'c_pyhfst'},
 
     # List run-time dependencies here.  These will be installed by pip when
@@ -83,7 +84,7 @@ setup_args = {
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    'package_data': {},
+    'package_data': {"c_pyhfst": [x.split("/")[-1]  for x in list(glob("./c_pyhfst/*.pyx")) + list(glob("./c_pyhfst/*.pxd")) + list(glob("./c_pyhfst/*.h"))]},
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
