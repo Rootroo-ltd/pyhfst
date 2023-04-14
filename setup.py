@@ -38,7 +38,7 @@ setup_args = {
     # Author details
     'author': 'Khalid Alnajjar and Mika Hämäläinen',
     'author_email': 'hello@rootroo.com',
-
+    "zip_safe":False,
     # Choose your license
     'license': "Apache-2.0",
 
@@ -103,8 +103,6 @@ setup_args = {
 
 try:
     from Cython.Build import cythonize
-    custom_setup_args = setup_args
-    custom_setup_args['install_requires'] = ['cython']
-    setup(ext_modules=cythonize("c_pyhfst/*.pyx", language_level=3), **custom_setup_args)
+    setup(ext_modules=cythonize("c_pyhfst/*.pyx", language_level=3), **setup_args)
 except Exception as e:
     setup(**setup_args)

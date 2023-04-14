@@ -2,4 +2,6 @@
 build/*
 dist/*
 pyhfst.egg-info/*
+*.c
+*.DS_Store
 
