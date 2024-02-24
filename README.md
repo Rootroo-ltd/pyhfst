@@ -29,12 +29,12 @@ Pyhfst can run way faster if you have Cython installed. After installing Cython,
 
 Please cite the library as follows:
 
-Hämäläinen, Mika, & Alnajjar, Khalid. (2023). Pyhfst: A Pure Python Implementation of HFST. Zenodo. https://doi.org/10.5281/zenodo.7791470
+Alnajjar, K., & Hämäläinen, M. (2023, December). PYHFST: A Pure Python Implementation of HFST. In Lightning Proceedings of NLP4DH and IWCLUL 2023 (pp. 32-35).
 
     @article{pyhfst_2023, 
-        title={Pyhfst: A Pure Python Implementation of HFST}, 
-        DOI={10.5281/zenodo.7791470}, 
-        publisher={Zenodo}, 
-        author={Hämäläinen, Mika and Alnajjar, Khalid}, 
+        title={PyHFST: A Pure Python Implementation of HFST},
+        author={Alnajjar, Khalid and H{\"a}m{\"a}l{\"a}inen, Mika},
+        booktitle={Lightning Proceedings of NLP4DH and IWCLUL 2023},
+        pages={32--35},
         year={2023} 
     }
