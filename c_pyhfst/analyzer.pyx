@@ -44,8 +44,10 @@ cdef class Analyzer:
         while True:
             input_symbol = self.transducer.transition_table.get_input(index)
             if self.transducer.operations.get(input_symbol):
-                if self.push_state(self.transducer.operations[input_symbol]):
-                    self.handle_epsilon_transition(index)
+                if not self.push_state(self.transducer.operations[input_symbol]):
+                    index += 1
+                    continue
+                self.handle_epsilon_transition(index)
                 index += 1
                 self.state.state_stack.pop()
                 continue
@@ -114,6 +116,8 @@ cdef class Analyzer:
                         idx)
 
                 self.state.output_pointer -= 1
+            else:
+                break
 
     cpdef void get_analyses(self, cython.longlong idx):
         """
@@ -125,7 +129,7 @@ cdef class Analyzer:
         cdef cython.longlong index = self.pivot(idx)
         is_transition = idx >= TRANSITION_TARGET_TABLE_START
         if is_transition:
-            self.try_epsilon_transitions(index + 1)
+            self.try_epsilon_transitions(self.pivot(index) + 1)
         else:
             self.try_epsilon_indices(index + 1)
 

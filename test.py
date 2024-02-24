@@ -9,3 +9,8 @@ print(tr.lookup("koira"))
 print(tr.lookup("koirani"))
 print(tr.lookup("luutapiiri"))
 print(tr.lookup("luutapiirissanikin"))
+
+input_stream = pyhfst.HfstInputStream("./generator-norm")
+tr = input_stream.read()
+
+print(tr.lookup("koira+N+Pl+Nom"))
