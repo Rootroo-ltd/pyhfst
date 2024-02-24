@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Tuple, Union, Optional
+from typing import List, Generator, Any, Tuple, Union, Optional
 import io
 from collections.abc import ByteString
 from collections import defaultdict
@@ -51,7 +51,10 @@ class IndexTable:
         :param i: The index to check.
         :return: True if the index is a final state, False otherwise.
         """
-        return (self.ti_input_symbols[i] == NO_SYMBOL_NUMBER and self.ti_targets[i] != NO_TABLE_INDEX)
+        return (
+            self.ti_input_symbols[i] == NO_SYMBOL_NUMBER
+            and self.ti_targets[i] != NO_TABLE_INDEX
+        )
 
     def get_final_weight(self, i: int) -> float:
         """
@@ -68,7 +71,9 @@ class TransitionTable:
     A table to store transitions between states.
     """
 
-    def __init__(self, input_stream: io.BytesIO, transition_count: int, is_weighted: bool = True):
+    def __init__(
+        self, input_stream: io.BytesIO, transition_count: int, is_weighted: bool = True
+    ):
         b = ByteArray(transition_count * 12)
         input_stream.readinto(b.bytes)
         self.is_weighted: bool = is_weighted
@@ -129,7 +134,11 @@ class TransitionTable:
         :param pos: The position to check.
         :return: True if the position is a final state, False otherwise.
         """
-        return self.ti_input_symbols[pos] == NO_SYMBOL_NUMBER and self.ti_output_symbols[pos] == NO_SYMBOL_NUMBER and self.ti_targets[pos] == 1
+        return (
+            self.ti_input_symbols[pos] == NO_SYMBOL_NUMBER
+            and self.ti_output_symbols[pos] == NO_SYMBOL_NUMBER
+            and self.ti_targets[pos] == 1
+        )
 
     def size(self) -> int:
         """
@@ -157,22 +166,34 @@ class State:
         self.current_weight: float = 0.0
         self.display_vector: List[int] = []
 
-    def find_key(self, index_string: str) -> List[int]:
+    def find_key(self, index_string: str) -> Generator[int, None, None]:
         """
         Finds the key associated with the given index string.
         :param index_string: The index string to search for.
         :return: The symbol number if found, otherwise NO_SYMBOL_NUMBER.
         """
-        
-        _pos = 0
-        while _pos < len(index_string):
-            for _length in range(1, len(index_string[_pos:]) + 1):
-                _x = index_string[_pos :_pos + _length]
-                try:
-                    yield self.parent.symbol_map[_x]
-                except:
+
+        i = 0
+
+        while i < len(index_string):
+            match_found = False
+            for length in range(len(index_string) - i, 0, -1):
+                substr = index_string[i : i + length]
+                map_pointer = self.parent.symbol_map
+                for char in substr:
+                    if char in map_pointer:
+                        map_pointer = map_pointer[char]
+                    else:
+                        break
+                else:
+                    if None in map_pointer:
+                        yield map_pointer[None]
+                        i += length - 1
+                        match_found = True
                     break
-            _pos += 1
+            if not match_found:
+                yield NO_SYMBOL_NUMBER
+            i += 1
 
         yield NO_SYMBOL_NUMBER
 
@@ -183,7 +204,7 @@ class Result:
     """
 
     def __init__(self, symbols: List[str], weight: float):
-        self.symbols:  List[str] = symbols
+        self.symbols: List[str] = symbols
         self.weight: float = weight
 
     def get_symbols(self) -> List[str]:
@@ -208,4 +229,4 @@ class Result:
 
         :return: A string representation of the result in the format (text: weight).
         """
-        return ''.join(self.symbols) + ": " + str(self.weight)
+        return "".join(self.symbols) + ": " + str(self.weight)

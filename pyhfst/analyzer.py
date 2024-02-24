@@ -2,13 +2,13 @@ from .common import *
 from .transducer import Transducer
 from .flag_diacritic_operation import FlagDiacriticOperation, FlagDiacriticOperator
 
+
 class Analyzer:
     def __init__(self, transducer: Transducer, input_str: str):
         self.transducer = transducer
         self.input_str = input_str
         self.state = State(input_str, self.transducer)
 
-    
     def pivot(self, i: int) -> int:
         """
         Computes the pivot for the given index.
@@ -28,8 +28,9 @@ class Analyzer:
         :param state: The current state of the transducer.
         """
         if self.transducer.index_table.get_input(index) == 0:
-            self.try_epsilon_transitions(self.pivot(
-                self.transducer.index_table.get_target(index)))
+            self.try_epsilon_transitions(
+                self.pivot(self.transducer.index_table.get_target(index))
+            )
 
     def try_epsilon_transitions(self, index: int) -> None:
         """
@@ -42,8 +43,10 @@ class Analyzer:
             input_symbol = self.transducer.transition_table.get_input(index)
 
             if self.transducer.operations.get(input_symbol):
-                if self.push_state(self.transducer.operations[input_symbol]):
-                    self.handle_epsilon_transition(index)
+                if not self.push_state(self.transducer.operations[input_symbol]):
+                    index += 1
+                    continue
+                self.handle_epsilon_transition(index)
                 index += 1
                 self.state.state_stack.pop()
                 continue
@@ -61,9 +64,19 @@ class Analyzer:
         :param index: The index to find in the transducer.
         :param state: The current state of the transducer.
         """
-        if self.transducer.index_table.get_input(index + (self.state.input_string[self.state.input_pointer - 1])) == self.state.input_string[self.state.input_pointer - 1]:
-            self.find_transitions(self.pivot(self.transducer.index_table.get_target(
-                index + self.state.input_string[self.state.input_pointer - 1])))
+        if (
+            self.transducer.index_table.get_input(
+                index + (self.state.input_string[self.state.input_pointer - 1])
+            )
+            == self.state.input_string[self.state.input_pointer - 1]
+        ):
+            self.find_transitions(
+                self.pivot(
+                    self.transducer.index_table.get_target(
+                        index + self.state.input_string[self.state.input_pointer - 1]
+                    )
+                )
+            )
 
     def handle_epsilon_transition(self, index: int) -> None:
         """
@@ -76,12 +89,16 @@ class Analyzer:
         self.state.output_pointer += 1
 
         if self.transducer.is_weighted:
-            self.state.current_weight += self.transducer.transition_table.get_weight(index)
+            self.state.current_weight += self.transducer.transition_table.get_weight(
+                index
+            )
 
         self.get_analyses(self.transducer.transition_table.get_target(index))
 
         if self.transducer.is_weighted:
-            self.state.current_weight -= self.transducer.transition_table.get_weight(index)
+            self.state.current_weight -= self.transducer.transition_table.get_weight(
+                index
+            )
 
         self.state.output_pointer -= 1
 
@@ -94,24 +111,31 @@ class Analyzer:
         """
         for idx in range(index, self.transducer.transition_table.size()):
             input_symbol = self.transducer.transition_table.get_input(idx)
+
             if input_symbol == NO_SYMBOL_NUMBER:
                 break
 
             if input_symbol == self.state.input_string[self.state.input_pointer - 1]:
-                self.update_output_string(self.transducer.transition_table.get_output(idx))
+                self.update_output_string(
+                    self.transducer.transition_table.get_output(idx)
+                )
                 self.state.output_pointer += 1
 
                 if self.transducer.is_weighted:
-                    self.state.current_weight += self.transducer.transition_table.get_weight(
-                        idx)
+                    self.state.current_weight += (
+                        self.transducer.transition_table.get_weight(idx)
+                    )
 
                 self.get_analyses(self.transducer.transition_table.get_target(idx))
 
                 if self.transducer.is_weighted:
-                    self.state.current_weight -= self.transducer.transition_table.get_weight(
-                        idx)
+                    self.state.current_weight -= (
+                        self.transducer.transition_table.get_weight(idx)
+                    )
 
                 self.state.output_pointer -= 1
+            else:
+                break
 
     def get_analyses(self, idx: int) -> None:
         """
@@ -124,7 +148,7 @@ class Analyzer:
         is_transition = idx >= TRANSITION_TARGET_TABLE_START
 
         if is_transition:
-            self.try_epsilon_transitions(index + 1)
+            self.try_epsilon_transitions(self.pivot(index) + 1)
         else:
             self.try_epsilon_indices(index + 1)
 
@@ -179,7 +203,9 @@ class Analyzer:
         else:
             self.state.output_string[self.state.output_pointer] = NO_SYMBOL_NUMBER
 
-    def get_final_and_weight(self, index: int, is_transition: bool) -> Tuple[bool, float]:
+    def get_final_and_weight(
+        self, index: int, is_transition: bool
+    ) -> Tuple[bool, float]:
         """
         Gets the final state and weight based on the index and transition flag.
 
@@ -188,14 +214,22 @@ class Analyzer:
         :return: A tuple containing a boolean for final state and a float for the weight.
         """
         if is_transition:
-            is_final = self.transducer.transition_table.size(
-            ) > index and self.transducer.transition_table.is_final(index)
-            weight = self.transducer.transition_table.get_weight(
-                index) if self.transducer.is_weighted else 0
+            is_final = (
+                self.transducer.transition_table.size() > index
+                and self.transducer.transition_table.is_final(index)
+            )
+            weight = (
+                self.transducer.transition_table.get_weight(index)
+                if self.transducer.is_weighted
+                else 0
+            )
         else:
             is_final = self.transducer.index_table.is_final(index)
-            weight = self.transducer.index_table.get_final_weight(
-                index) if self.transducer.is_weighted else 0
+            weight = (
+                self.transducer.index_table.get_final_weight(index)
+                if self.transducer.is_weighted
+                else 0
+            )
 
         return is_final, weight
 
@@ -219,8 +253,11 @@ class Analyzer:
         :param state: The current state of the transducer.
         :return: A list of symbols.
         """
-        symbols = [self.transducer.alphabet.keyTable[self.state.output_string[i]] for i in range(
-            len(self.state.output_string)) if self.state.output_string[i] != NO_SYMBOL_NUMBER]
+        symbols = [
+            self.transducer.alphabet.keyTable[self.state.output_string[i]]
+            for i in range(len(self.state.output_string))
+            if self.state.output_string[i] != NO_SYMBOL_NUMBER
+        ]
         return symbols
 
     def note_analysis(self) -> None:
@@ -229,7 +266,12 @@ class Analyzer:
 
         :param state: The current state of the transducer.
         """
-        self.state.display_vector.append(Result(self.get_symbols(), self.state.current_weight if self.transducer.is_weighted else 1.0))
+        self.state.display_vector.append(
+            Result(
+                self.get_symbols(),
+                self.state.current_weight if self.transducer.is_weighted else 1.0,
+            )
+        )
 
     def get_alphabet(self) -> List[str]:
         """
@@ -239,7 +281,7 @@ class Analyzer:
         """
         return self.transducer.alphabet.keyTable
 
-    def analyze(self) -> List['Result']:
+    def analyze(self) -> List["Result"]:
         """
         Analyzes the input string using the transducer.
 
@@ -297,7 +339,14 @@ class Analyzer:
             self.state.state_stack[-1][flag.feature] = 0
             return True
         elif flag.op == FlagDiacriticOperator.U:  # unification
-            if (self.state.state_stack[-1][flag.feature] == 0) or (self.state.state_stack[-1][flag.feature] == flag.value) or (self.state.state_stack[-1][flag.feature] != flag.value and self.state.state_stack[-1][flag.feature] < 0):
+            if (
+                (self.state.state_stack[-1][flag.feature] == 0)
+                or (self.state.state_stack[-1][flag.feature] == flag.value)
+                or (
+                    self.state.state_stack[-1][flag.feature] != flag.value
+                    and self.state.state_stack[-1][flag.feature] < 0
+                )
+            ):
                 self.state.state_stack.append(top)
                 self.state.state_stack[-1][flag.feature] = flag.value
                 return True
