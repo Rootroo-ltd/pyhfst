@@ -33,6 +33,8 @@ cdef class Transducer:
             if len(_w) <= 1:
                 self.symbol_map[_w] = {None: i}
             else:
+                if _w[0] not in self.symbol_map:
+                    self.symbol_map[_w[0]] = {}
                 _o = self.symbol_map[_w[0]]
                 for j in range(1, len(_w)):
                     _c = _w[j]

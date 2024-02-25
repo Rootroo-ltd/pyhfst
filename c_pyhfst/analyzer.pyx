@@ -252,7 +252,7 @@ cdef class Analyzer:
             return self.state.display_vector
 
     cpdef bint push_state(self, FlagDiacriticOperation flag):
-        cdef dict top = self.state.state_stack[-1]
+        cdef list top = self.state.state_stack[-1]
         if flag.op == FlagDiacriticOperator.P:  # positive set
             self.state.state_stack.append(top)
             self.state.state_stack[-1][flag.feature] = flag.value
