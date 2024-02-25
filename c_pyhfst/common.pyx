@@ -107,16 +107,27 @@ cdef class State:
 
     cdef list find_key(self, str index_string):
         output = list()
+        i = 0
 
-        _pos = 0
-        while _pos < len(index_string):
-            for _length in range(1, len(index_string[_pos:]) + 1):
-                _x = index_string[_pos :_pos + _length]
-                try:
-                    output.append(self.parent.symbol_map[_x])
-                except:
+        while i < len(index_string):
+            match_found = False
+            for length in range(len(index_string) - i, 0, -1):
+                substr = index_string[i : i + length]
+                map_pointer = self.parent.symbol_map
+                for char in substr:
+                    if char in map_pointer:
+                        map_pointer = map_pointer[char]
+                    else:
+                        break
+                else:
+                    if None in map_pointer:
+                        output.append(map_pointer[None])
+                        i += length - 1
+                        match_found = True
                     break
-            _pos += 1
+            if not match_found:
+                output.append(NO_SYMBOL_NUMBER)
+            i += 1
 
         output.append(NO_SYMBOL_NUMBER)
 

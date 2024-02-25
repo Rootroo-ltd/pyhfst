@@ -12,3 +12,4 @@ cdef class Transducer:
     cdef public dict symbol_map
     cdef public IndexTable index_table
     cdef public TransitionTable transition_table
+    cpdef void construct_symbol_map(self)
