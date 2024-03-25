@@ -28,7 +28,7 @@ setup_args = {
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    "version": "1.2.0",
+    "version": "1.3.0",
     "description": "A pure Python implementation of HFST for using HFST optimized lookup transducers (with or without weights)",
     "long_description": long_description,
     "long_description_content_type": "text/markdown",

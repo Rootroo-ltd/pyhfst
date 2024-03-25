@@ -127,9 +127,12 @@ cdef class Analyzer:
         :param state: The current state of the transducer.
         """
         cdef cython.longlong index = self.pivot(idx)
+        cdef cython.longlong next_v = index
         is_transition = idx >= TRANSITION_TARGET_TABLE_START
         if is_transition:
-            self.try_epsilon_transitions(self.pivot(index) + 1)
+            if self.transducer.is_weighted:
+                next_v = self.pivot(index)
+            self.try_epsilon_transitions(next_v + 1)
         else:
             self.try_epsilon_indices(index + 1)
 
@@ -252,7 +255,7 @@ cdef class Analyzer:
             return self.state.display_vector
 
     cpdef bint push_state(self, FlagDiacriticOperation flag):
-        cdef list top = self.state.state_stack[-1]
+        cdef list top = self.state.state_stack[-1].copy()
         if flag.op == FlagDiacriticOperator.P:  # positive set
             self.state.state_stack.append(top)
             self.state.state_stack[-1][flag.feature] = flag.value

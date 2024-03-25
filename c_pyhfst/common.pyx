@@ -39,7 +39,8 @@ cdef class IndexTable:
 
 cdef class TransitionTable:
     def __init__(self, input_stream: io.BytesIO, cython.longlong transition_count, bint is_weighted=True):
-        b = ByteArray(transition_count * 12)
+        block_size = 12 if is_weighted else 8
+        b = ByteArray(transition_count * block_size)
         input_stream.readinto(b.bytes)
 
         self._size = transition_count

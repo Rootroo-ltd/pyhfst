@@ -74,7 +74,8 @@ class TransitionTable:
     def __init__(
         self, input_stream: io.BytesIO, transition_count: int, is_weighted: bool = True
     ):
-        b = ByteArray(transition_count * 12)
+        block_size = 12 if is_weighted else 8
+        b = ByteArray(transition_count * block_size)
         input_stream.readinto(b.bytes)
         self.is_weighted: bool = is_weighted
         self.ti_input_symbols: List[int] = [0] * transition_count

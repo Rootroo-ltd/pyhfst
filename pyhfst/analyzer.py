@@ -148,7 +148,8 @@ class Analyzer:
         is_transition = idx >= TRANSITION_TARGET_TABLE_START
 
         if is_transition:
-            self.try_epsilon_transitions(self.pivot(index) + 1)
+            next_v = self.pivot(index) if self.transducer.is_weighted else index
+            self.try_epsilon_transitions(next_v + 1)
         else:
             self.try_epsilon_indices(index + 1)
 
@@ -302,7 +303,7 @@ class Analyzer:
         :param state: The current state of the transducer.
         :return: A boolean indicating if the push was successful.
         """
-        top = self.state.state_stack[-1]
+        top = self.state.state_stack[-1].copy()
         if flag.op == FlagDiacriticOperator.P:  # positive set
             self.state.state_stack.append(top)
             self.state.state_stack[-1][flag.feature] = flag.value
