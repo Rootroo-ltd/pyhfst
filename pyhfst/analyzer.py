@@ -1,13 +1,16 @@
 from .common import *
 from .transducer import Transducer
 from .flag_diacritic_operation import FlagDiacriticOperation, FlagDiacriticOperator
+import time
 
 
 class Analyzer:
-    def __init__(self, transducer: Transducer, input_str: str):
+    def __init__(self, transducer: Transducer, input_str: str, time_cutoff: float = 0.0):
         self.transducer = transducer
         self.input_str = input_str
         self.state = State(input_str, self.transducer)
+        self.time_cutoff = time_cutoff
+        self.start_time = time.time() if time_cutoff > 0.0 else 0.0
 
     def pivot(self, i: int) -> int:
         """
@@ -137,6 +140,17 @@ class Analyzer:
             else:
                 break
 
+    def is_time_exceeded(self) -> bool:
+        """
+        Checks if the time cutoff has been exceeded.
+
+        :return: True if time cutoff is set and has been exceeded, False otherwise.
+        """
+        if self.time_cutoff > 0.0:
+            elapsed = time.time() - self.start_time
+            return elapsed > self.time_cutoff
+        return False
+
     def get_analyses(self, idx: int) -> None:
         """
         Gets the analyses for the given index and state.
@@ -144,6 +158,10 @@ class Analyzer:
         :param idx: The index to get the analyses for.
         :param state: The current state of the transducer.
         """
+        # Check if time cutoff has been exceeded
+        if self.is_time_exceeded():
+            return
+
         index = self.pivot(idx)
         is_transition = idx >= TRANSITION_TARGET_TABLE_START
 

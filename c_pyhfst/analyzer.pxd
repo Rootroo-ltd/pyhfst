@@ -9,9 +9,12 @@ cdef class Analyzer:
     cdef Transducer transducer
     cdef str input_str
     cdef State state
+    cdef double time_cutoff
+    cdef double start_time
 
 
     cpdef cython.longlong pivot(self, cython.longlong i)
+    cpdef bint is_time_exceeded(self)
     cpdef void try_epsilon_indices(self, cython.longlong index)
     cpdef void try_epsilon_transitions(self, cython.longlong index)
     cpdef void find_index(self, cython.longlong index)

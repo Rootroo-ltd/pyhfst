@@ -2,13 +2,16 @@
 from .common cimport *
 from .flag_diacritic_operation cimport FlagDiacriticOperation, FlagDiacriticOperator
 from .transducer import Transducer
+import time
 
 cdef class Analyzer:
 
-    def __cinit__(self, transducer: Transducer, input_str: str):
+    def __cinit__(self, transducer: Transducer, input_str: str, double time_cutoff=0.0):
         self.transducer = transducer
         self.input_str = input_str
         self.state = State(input_str, self.transducer)
+        self.time_cutoff = time_cutoff
+        self.start_time = time.time() if time_cutoff > 0.0 else 0.0
 
     cpdef cython.longlong pivot(self, cython.longlong i):
         """
@@ -20,6 +23,18 @@ cdef class Analyzer:
         if i >= TRANSITION_TARGET_TABLE_START:
             return (i - TRANSITION_TARGET_TABLE_START) % TRANSITION_TARGET_TABLE_START
         return i
+
+    cpdef bint is_time_exceeded(self):
+        """
+        Checks if the time cutoff has been exceeded.
+
+        :return: True if time cutoff is set and has been exceeded, False otherwise.
+        """
+        cdef double elapsed
+        if self.time_cutoff > 0.0:
+            elapsed = time.time() - self.start_time
+            return elapsed > self.time_cutoff
+        return False
 
     cpdef void try_epsilon_indices(self, cython.longlong index):
         """
@@ -126,6 +141,10 @@ cdef class Analyzer:
         :param idx: The index to get the analyses for.
         :param state: The current state of the transducer.
         """
+        # Check if time cutoff has been exceeded
+        if self.is_time_exceeded():
+            return
+
         cdef cython.longlong index = self.pivot(idx)
         cdef cython.longlong next_v = index
         is_transition = idx >= TRANSITION_TARGET_TABLE_START
