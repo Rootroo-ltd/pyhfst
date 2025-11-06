@@ -52,11 +52,10 @@ cdef class TransducerAlphabet:
                     continue
                 ops, feats, *remainder = parts
                 vals = remainder[0] if remainder else ""
-                
-                op = ops_index.index(ops)
-                
 
-                if op is None:  # Not a valid operator, ignore the operation
+                try:
+                    op = ops_index.index(ops)
+                except ValueError:  # Not a valid operator, ignore the operation
                     self.keyTable.append("")
                     continue
 

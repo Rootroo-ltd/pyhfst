@@ -13,10 +13,10 @@ class TransducerHeader:
         if self.begins_hfst3_header(read_bytes):
             # just ignore any hfst3 header
             self.hfst3: bool = True
-            remaining = struct.unpack_from("<H", input_bytes.read(3), 0)[
+            remaining = struct.unpack_from("<H", input_bytes.read(2), 0)[
                 0]  # get remaining
-            struct.unpack_from(f"<{remaining}c", input_bytes.read(
-                remaining), 0)  # skip remaining
+            struct.unpack_from(f"<{remaining + 1}c", input_bytes.read(
+                remaining + 1), 0)  # skip remaining (+ 1 to match Java implementation)
             # 2 unsigned shorts, 4 unsigned ints and 9 uint-bools
             read_bytes = input_bytes.read(56)
         else:

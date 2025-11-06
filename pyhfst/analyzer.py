@@ -215,22 +215,22 @@ class Analyzer:
         :return: A tuple containing a boolean for final state and a float for the weight.
         """
         if is_transition:
-            is_final = (
-                self.transducer.transition_table.size() > index
-                and self.transducer.transition_table.is_final(index)
-            )
-            weight = (
-                self.transducer.transition_table.get_weight(index)
-                if self.transducer.is_weighted
-                else 0
-            )
+            if self.transducer.transition_table.size() > index:
+                is_final = self.transducer.transition_table.is_final(index)
+                weight = (
+                    self.transducer.transition_table.get_weight(index)
+                    if self.transducer.is_weighted
+                    else 0
+                )
+            else:
+                is_final = False
+                weight = 0
         else:
             is_final = self.transducer.index_table.is_final(index)
-            weight = (
-                self.transducer.index_table.get_final_weight(index)
-                if self.transducer.is_weighted
-                else 0
-            )
+            if is_final and self.transducer.is_weighted:
+                weight = self.transducer.index_table.get_final_weight(index)
+            else:
+                weight = 0
 
         return is_final, weight
 
@@ -270,7 +270,7 @@ class Analyzer:
         self.state.display_vector.append(
             Result(
                 self.get_symbols(),
-                self.state.current_weight if self.transducer.is_weighted else 1.0,
+                self.state.current_weight if self.transducer.is_weighted else 0.0,
             )
         )
 
