@@ -31,7 +31,12 @@ cdef class Transducer:
         for i in range(self.header.get_input_symbol_count()):
             _w = self.alphabet.keyTable[i]
             if len(_w) <= 1:
-                self.symbol_map[_w] = {None: i}
+                # Check if there's already a nested structure for multi-char symbols
+                if _w not in self.symbol_map:
+                    self.symbol_map[_w] = {None: i}
+                else:
+                    # Preserve existing nested structure, just add the single-char mapping
+                    self.symbol_map[_w][None] = i
             else:
                 if _w[0] not in self.symbol_map:
                     self.symbol_map[_w[0]] = {}
