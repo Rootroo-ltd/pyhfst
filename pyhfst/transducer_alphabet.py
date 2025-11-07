@@ -57,9 +57,9 @@ class TransducerAlphabet:
                 ops, feats, *remainder = parts
                 vals = remainder[0] if remainder else ""
 
-                op = FlagDiacriticOperator[ops]
-
-                if op is None:  # Not a valid operator, ignore the operation
+                try:
+                    op = FlagDiacriticOperator[ops]
+                except KeyError:  # Not a valid operator, ignore the operation
                     self.keyTable.append("")
                     continue
 

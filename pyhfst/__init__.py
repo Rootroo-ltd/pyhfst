@@ -64,17 +64,19 @@ class Hfst(object):
         self.mem = {}
 
 
-    def lookup(self, string: str) -> List[Tuple[str, float]]:
+    def lookup(self, string: str, time_cutoff: float = 0.0) -> List[Tuple[str, float]]:
         """
         Perform lookup on the input string and return the analyses.
 
         :param string: The input string to analyze.
+        :param time_cutoff: Maximum time in seconds for the lookup operation. 0.0 means no limit (default).
         :return: A list of tuples, where each sublist contains the string representation of the result and its weight.
         """
-        if self.cache:
+        if self.cache and time_cutoff == 0.0:
+            # Only use cache when no time cutoff is specified
             if string not in self.mem:
-                self.mem[string] = Analyzer(self.tr, string).analyze()
+                self.mem[string] = Analyzer(self.tr, string, time_cutoff=time_cutoff).analyze()
             result = self.mem[string]
         else:
-            result = Analyzer(self.tr, string).analyze()
+            result = Analyzer(self.tr, string, time_cutoff=time_cutoff).analyze()
         return [["".join(_r.get_symbols()), _r.get_weight()] for _r in result]

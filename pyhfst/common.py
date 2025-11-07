@@ -1,5 +1,6 @@
 from typing import List, Generator, Any, Tuple, Union, Optional
 import io
+import struct
 from collections.abc import ByteString
 from collections import defaultdict
 from .byte_array import ByteArray
@@ -63,7 +64,7 @@ class IndexTable:
         :param i: The index to retrieve the final weight from.
         :return: The final weight at the specified index.
         """
-        return float(self.ti_targets[i])
+        return struct.unpack('<f', struct.pack('<I', self.ti_targets[i]))[0]
 
 
 class TransitionTable:

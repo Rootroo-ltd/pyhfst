@@ -1,6 +1,7 @@
 # cython: language_level=3
 from libc.stdint cimport uint32_t, uint16_t, int32_t
 import io
+import struct
 from .byte_array cimport ByteArray
 cimport cython
 
@@ -34,7 +35,7 @@ cdef class IndexTable:
 
     cpdef float get_final_weight(self, int i):
         i = i % self._size
-        return float(self.ti_targets[i])
+        return struct.unpack('<f', struct.pack('<I', self.ti_targets[i]))[0]
 
 
 cdef class TransitionTable:
