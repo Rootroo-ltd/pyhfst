@@ -28,7 +28,7 @@ setup_args = {
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    "version": "1.4.0",
+    "version": "1.4.1",
     "description": "A pure Python implementation of HFST for using HFST optimized lookup transducers (with or without weights)",
     "long_description": long_description,
     "long_description_content_type": "text/markdown",
@@ -96,9 +96,22 @@ setup_args = {
     },
 }
 
-try:
-    from Cython.Build import cythonize
+# The Cython implementation is several times faster. Cython is a build requirement (pyproject.toml), so pip compiles
+# it automatically. The extensions are optional: if they cannot be built (e.g. no C compiler), the installation
+# continues and pyhfst uses its pure Python implementation (pyhfst.CYTHON tells which one is in use).
+# Set PYHFST_PURE_PYTHON=1 to skip compiling.
+ext_modules = []
+if not os.environ.get("PYHFST_PURE_PYTHON"):
+    try:
+        from Cython.Build import cythonize
 
-    setup(ext_modules=cythonize("c_pyhfst/*.pyx", language_level=3), **setup_args)
-except Exception as e:
-    setup(**setup_args)
+        ext_modules = cythonize("c_pyhfst/*.pyx", language_level=3)
+        for ext in ext_modules:
+            ext.optional = True
+    except Exception as e:  # Cython missing or the .pyx files cannot be translated
+        import sys
+
+        print(f"WARNING: pyhfst will use its pure Python implementation (Cython build failed: {e})", file=sys.stderr)
+        ext_modules = []
+
+setup(ext_modules=ext_modules, **setup_args)

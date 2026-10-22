@@ -3,16 +3,20 @@ from pathlib import Path
 from io import BufferedReader
 
 
-try:
+try:  # the compiled (Cython) implementation, built automatically at installation when possible
     from c_pyhfst.transducer import Transducer
     from c_pyhfst.transducer_header import TransducerHeader
     from c_pyhfst.transducer_alphabet import TransducerAlphabet
     from c_pyhfst.analyzer import Analyzer
-except:
+
+    CYTHON = True
+except ImportError:  # the pure Python implementation
     from .transducer import Transducer
     from .transducer_header import TransducerHeader
     from .transducer_alphabet import TransducerAlphabet
     from .analyzer import Analyzer
+
+    CYTHON = False
 
 def get_transducer(transducer_path: Union[str, Path]) -> Transducer:
     """
