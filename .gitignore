@@ -5,3 +5,5 @@ pyhfst.egg-info/*
 *.c
 *.DS_Store
 
+wheelhouse/
+*.so

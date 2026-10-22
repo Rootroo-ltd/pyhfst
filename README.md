@@ -10,10 +10,12 @@ The library will run on all operting systems that support Python 3.
 
     pip install pyhfst
     
-Pyhfst can run way faster if you have Cython installed. After installing Cython, you must reinstall Pyhfst
+Pyhfst compiles its faster Cython implementation automatically during installation. If that is not possible (for
+example, there is no C compiler), it installs and runs the pure Python implementation instead. You can check which one
+is in use:
 
-    pip install cython
-    pip install --upgrade --force-reinstall pyhfst --no-cache-dir
+    import pyhfst
+    print(pyhfst.CYTHON)  # True: the compiled implementation; False: pure Python
 
 # Usage
 
